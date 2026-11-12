@@ -1,0 +1,153 @@
+<?xml version='1.0' encoding='utf-8'?>
+<Widget version="2" screenWidth="904" frameRate="1" scaleByDensity="false" useVariableUpdater="none" supportFullAod="true" clearCanvas="true">
+  <Var name="rear_active" type="number" />
+  <Var name="rear_aod" type="number" />
+  <Var name="rear_commit" type="number" />
+  <Var name="rear_count" type="number" />
+  <Var name="rear_ready" type="number" />
+  <Var name="rear_clock_ok" type="number" />
+  <Var name="rear_wall_ok" type="number" />
+  <Var name="rear_elapsed_now" type="number" />
+  <Var name="rear_wall_now" type="number" />
+  <Var name="rear_expires_at" type="number" />
+  <Var name="rear_expires_elapsed" type="number" />
+  <Var name="rear_generation" type="number" />
+  <Var name="rear_committed_generation" type="number" />
+  <Var name="rear_qr_side" type="number" />
+  <Var name="rear_bar_width" type="number" />
+  <Var name="rear_bar_height" type="number" />
+  <Var name="rear_instance" type="string" />
+  <Var name="rear_committed_instance" type="string" />
+  <Var name="rear_balance_awake" type="number" />
+  <Var name="rear_balance_aod" type="number" />
+  <Var name="rear_balance_expires_elapsed" type="number" />
+  <Var name="rear_balance_text" type="string" />
+  <Var name="rear_clock_pulse" expression="0" threshold="0">
+    <Trigger>
+      <VariableCommand name="rear_clock_ok" expression="0" />
+      <VariableCommand name="rear_wall_ok" expression="0" />
+      <MethodCommand class="android.os.SystemClock" method="elapsedRealtime" return="rear_elapsed_now" returnType="number" errorVar="rear_clock_ok" />
+      <MethodCommand class="java.lang.System" method="currentTimeMillis" return="rear_wall_now" returnType="number" errorVar="rear_wall_ok" />
+    </Trigger>
+  </Var>
+  <Var name="rear_visible" expression="(#rear_active==1)**(#rear_commit==1)**(#rear_count}0)**(#rear_ready==1)**(#rear_clock_ok==1)**(#rear_wall_ok==1)**(#rear_elapsed_now}0)**(#rear_expires_elapsed}#rear_elapsed_now)**(#rear_expires_at}#rear_wall_now)**(#rear_generation==#rear_committed_generation)**eqs(@rear_instance,@rear_committed_instance)" />
+  <Var name="rear_safe_left" expression="ifelse(#view_width}940,280,279)" />
+  <Var name="rear_center_x" expression="(#rear_safe_left+#view_width-24)/2" />
+  <Var name="rear_bar_visible" expression="#rear_visible**(#rear_bar_width}0)" />
+  <Var name="rear_compact_qr_side" expression="floor(#rear_qr_side*14/15)" />
+  <Var name="rear_balance_slot_fits" expression="(#view_height}(#rear_compact_qr_side+6+ifelse(#rear_bar_visible,#rear_bar_height+30,0)+82+24))" />
+  <Var name="rear_balance_visible" expression="#rear_visible**(#rear_balance_awake==1)**(#rear_balance_aod==0)**(#rear_balance_expires_elapsed}#rear_elapsed_now)**#rear_balance_slot_fits" />
+  <Var name="rear_qr_display_side" expression="ifelse(#rear_balance_slot_fits,#rear_compact_qr_side,#rear_qr_side)" />
+  <Var name="rear_group_height" expression="#rear_qr_display_side+6+ifelse(#rear_bar_visible,#rear_bar_height+ifelse(#rear_balance_slot_fits,30,36),0)+ifelse(#rear_balance_slot_fits,82,0)" />
+  <Var name="rear_group_top" expression="floor((#view_height-#rear_group_height)/2)" />
+  <Var name="rear_qr_top" expression="#rear_group_top+ifelse(#rear_bar_visible,#rear_bar_height+ifelse(#rear_balance_slot_fits,30,36),0)" />
+  <Var name="rear_balance_top" expression="#rear_qr_top+#rear_qr_display_side+6+12" />
+  <VariableBinders>
+    <ContentProviderBinder name="rear_data" uri="content://dev.codex.hfutcampus.rear/campus" columns="instance_id,generation,ready,expires_at,expires_elapsed,qr_side,barcode_width,barcode_height,barcode_png,qr_png,balance_text,balance_expires_elapsed" countName="rear_count" updateInterval="-1" vigilant="true" queryAtStart="false">
+      <Variable name="rear_instance" type="string" column="instance_id" row="0" />
+      <Variable name="rear_generation" type="long" column="generation" row="0" />
+      <Variable name="rear_ready" type="int" column="ready" row="0" />
+      <Variable name="rear_expires_at" type="long" column="expires_at" row="0" />
+      <Variable name="rear_expires_elapsed" type="long" column="expires_elapsed" row="0" />
+      <Variable name="rear_qr_side" type="int" column="qr_side" row="0" />
+      <Variable name="rear_bar_width" type="int" column="barcode_width" row="0" />
+      <Variable name="rear_bar_height" type="int" column="barcode_height" row="0" />
+      <Variable name="rear_bar_image" type="blob.bitmap" column="barcode_png" row="0" />
+      <Variable name="rear_qr_image" type="blob.bitmap" column="qr_png" row="0" />
+      <Variable name="rear_balance_text" type="string" column="balance_text" row="0" />
+      <Variable name="rear_balance_expires_elapsed" type="long" column="balance_expires_elapsed" row="0" />
+      <Trigger>
+        <VariableCommand name="rear_clock_ok" expression="0" />
+        <VariableCommand name="rear_wall_ok" expression="0" />
+        <MethodCommand class="android.os.SystemClock" method="elapsedRealtime" return="rear_elapsed_now" returnType="number" errorVar="rear_clock_ok" />
+        <MethodCommand class="java.lang.System" method="currentTimeMillis" return="rear_wall_now" returnType="number" errorVar="rear_wall_ok" />
+        <VariableCommand name="rear_committed_generation" expression="#rear_generation" />
+        <VariableCommand name="rear_committed_instance" type="string" expression="@rear_instance" />
+        <VariableCommand name="rear_commit" expression="1" />
+        <FrameRateCommand rate="ifelse(#rear_active**(#rear_ready==1),1,0)" />
+      </Trigger>
+    </ContentProviderBinder>
+  </VariableBinders>
+  <Rectangle x="0" y="0" w="#view_width" h="#view_height" fillColor="#FF000000" />
+  <Rectangle x="floor(#rear_center_x-#rear_bar_width/2)-6" y="#rear_group_top" w="#rear_bar_width+12" h="#rear_bar_height+12" cornerRadius="16,16" fillColor="#FFFFFFFF" visibility="#rear_bar_visible" />
+  <Rectangle x="floor(#rear_center_x-#rear_qr_display_side/2)-3" y="#rear_qr_top" w="#rear_qr_display_side+6" h="#rear_qr_display_side+6" cornerRadius="10,10" fillColor="#FFFFFFFF" visibility="#rear_visible" />
+  <Image name="rear_bar_image" x="floor(#rear_center_x-#rear_bar_width/2)" y="#rear_group_top+6" w="#rear_bar_width" h="#rear_bar_height" antiAlias="false" visibility="#rear_bar_visible" />
+  <Image name="rear_qr_image" x="floor(#rear_center_x-#rear_qr_display_side/2)" y="#rear_qr_top+3" w="#rear_qr_display_side" h="#rear_qr_display_side" antiAlias="false" visibility="#rear_visible" />
+  <Text name="rear_balance_label" x="#rear_center_x" y="#rear_balance_top" textExp="@rear_balance_text" align="center" alignV="top" size="56" color="#FFF5F5F5" visibility="#rear_balance_visible" />
+  <ExternalCommands>
+    <Trigger action="init">
+      <VariableCommand name="rear_aod" expression="0" />
+      <VariableCommand name="rear_commit" expression="0" />
+      <VariableCommand name="rear_ready" expression="0" />
+      <VariableCommand name="rear_count" expression="0" />
+      <VariableCommand name="rear_expires_at" expression="0" />
+      <VariableCommand name="rear_expires_elapsed" expression="0" />
+      <VariableCommand name="rear_active" expression="1" />
+      <VariableCommand name="rear_balance_expires_elapsed" expression="0" />
+      <VariableCommand name="rear_balance_aod" expression="0" />
+      <VariableCommand name="rear_balance_awake" expression="0" />
+      <VariableCommand name="rear_clock_ok" expression="0" />
+      <VariableCommand name="rear_wall_ok" expression="0" />
+      <MethodCommand class="android.os.SystemClock" method="elapsedRealtime" return="rear_elapsed_now" returnType="number" errorVar="rear_clock_ok" />
+      <MethodCommand class="java.lang.System" method="currentTimeMillis" return="rear_wall_now" returnType="number" errorVar="rear_wall_ok" />
+      <FrameRateCommand rate="1" />
+      <BinderCommand name="rear_data" command="refresh" />
+    </Trigger>
+    <Trigger action="resume">
+      <VariableCommand name="rear_aod" expression="0" />
+      <VariableCommand name="rear_active" expression="1" />
+      <VariableCommand name="rear_balance_expires_elapsed" expression="0" />
+      <VariableCommand name="rear_balance_awake" expression="1" />
+      <VariableCommand name="rear_clock_ok" expression="0" />
+      <VariableCommand name="rear_wall_ok" expression="0" />
+      <MethodCommand class="android.os.SystemClock" method="elapsedRealtime" return="rear_elapsed_now" returnType="number" errorVar="rear_clock_ok" />
+      <MethodCommand class="java.lang.System" method="currentTimeMillis" return="rear_wall_now" returnType="number" errorVar="rear_wall_ok" />
+      <FrameRateCommand rate="1" />
+      <BinderCommand name="rear_data" command="refresh" />
+    </Trigger>
+    <Trigger action="exitAod">
+      <VariableCommand name="rear_aod" expression="0" />
+      <VariableCommand name="rear_active" expression="1" />
+      <VariableCommand name="rear_balance_expires_elapsed" expression="0" />
+      <VariableCommand name="rear_balance_aod" expression="0" />
+      <VariableCommand name="rear_balance_awake" expression="1" />
+      <VariableCommand name="rear_clock_ok" expression="0" />
+      <VariableCommand name="rear_wall_ok" expression="0" />
+      <MethodCommand class="android.os.SystemClock" method="elapsedRealtime" return="rear_elapsed_now" returnType="number" errorVar="rear_clock_ok" />
+      <MethodCommand class="java.lang.System" method="currentTimeMillis" return="rear_wall_now" returnType="number" errorVar="rear_wall_ok" />
+      <FrameRateCommand rate="1" />
+      <BinderCommand name="rear_data" command="refresh" />
+    </Trigger>
+    <Trigger action="enterAod">
+      <VariableCommand name="rear_aod" expression="1" />
+      <VariableCommand name="rear_active" expression="1" />
+      <VariableCommand name="rear_balance_expires_elapsed" expression="0" />
+      <VariableCommand name="rear_balance_aod" expression="1" />
+      <VariableCommand name="rear_balance_awake" expression="0" />
+      <VariableCommand name="rear_clock_ok" expression="0" />
+      <VariableCommand name="rear_wall_ok" expression="0" />
+      <MethodCommand class="android.os.SystemClock" method="elapsedRealtime" return="rear_elapsed_now" returnType="number" errorVar="rear_clock_ok" />
+      <MethodCommand class="java.lang.System" method="currentTimeMillis" return="rear_wall_now" returnType="number" errorVar="rear_wall_ok" />
+      <FrameRateCommand rate="1" />
+      <BinderCommand name="rear_data" command="refresh" />
+    </Trigger>
+    <Trigger action="pause">
+      <VariableCommand name="rear_balance_awake" expression="0" />
+      <VariableCommand name="rear_balance_expires_elapsed" expression="0" />
+      <FrameRateCommand rate="ifelse(#rear_aod,1,0)" />
+    </Trigger>
+    <Trigger action="finish">
+      <VariableCommand name="rear_balance_awake" expression="0" />
+      <VariableCommand name="rear_balance_aod" expression="0" />
+      <VariableCommand name="rear_balance_expires_elapsed" expression="0" />
+      <VariableCommand name="rear_commit" expression="0" />
+      <VariableCommand name="rear_ready" expression="0" />
+      <VariableCommand name="rear_count" expression="0" />
+      <VariableCommand name="rear_expires_at" expression="0" />
+      <VariableCommand name="rear_expires_elapsed" expression="0" />
+      <VariableCommand name="rear_active" expression="0" />
+      <VariableCommand name="rear_aod" expression="0" />
+      <FrameRateCommand rate="0" />
+    </Trigger>
+  </ExternalCommands>
+</Widget>

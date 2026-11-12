@@ -1,0 +1,44 @@
+# 本地 AI 配置、会话和附件
+.codex/
+.codex-remote-attachments/
+.claude/
+.cursor/
+.gemini/
+.windsurf/
+.aider.chat.history.md
+.aider.input.history
+.aider.tags.cache*/
+AGENTS.local.md
+CLAUDE.md
+CLAUDE.local.md
+GEMINI.md
+
+# 本地验证、测试报告和日志
+.local/
+/.scratch/
+/.tmp/
+/tests/local/
+coverage/
+.nyc_output/
+test-results/
+playwright-report/
+*.log
+
+# 背屏主题和 HFP 构建产物
+/build/
+/dist/
+node_modules/
+/sign/
+*.mtz
+*.hfp
+__pycache__/
+
+# 本地环境和签名材料
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.jks
+*.keystore

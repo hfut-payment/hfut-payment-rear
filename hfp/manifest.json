@@ -1,0 +1,18 @@
+{
+  "api": 2,
+  "id": "hfut.rear",
+  "name": "背屏付款码",
+  "version": "2.0.4",
+  "revision": 200104,
+  "capability": "page",
+  "community": {
+    "backgroundLogin": true
+  },
+  "shortcuts": {
+    "settings": {
+      "title": "背屏",
+      "detail": "显示与读取权限",
+      "icon": "display"
+    }
+  }
+}

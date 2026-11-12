@@ -1,0 +1,9 @@
+{
+  "name": "hfut-campus-card-rear",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build-theme.mjs",
+    "build:hfp": "node scripts/pack.mjs --source hfp"
+  }
+}
