@@ -1,0 +1,100 @@
+name: Build plugin
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      signed_candidate:
+        description: Build a signed candidate without publishing it
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    env:
+      SIGNED_BUILD: ${{ github.ref_type == 'tag' || inputs.signed_candidate }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Build rear display theme
+        run: npm run build
+      - name: Package and verify HFP
+        env:
+          HFP_SIGNING_KEY: ${{ secrets.HFP_SIGNING_KEY_PEM }}
+          HFP_SIGNING_CERT: ${{ secrets.HFP_SIGNING_CERT_PEM }}
+        run: |
+          version=$(node -p "require('./hfp/manifest.json').version")
+          if [[ "$GITHUB_REF_TYPE" == tag ]]; then
+            [[ "$GITHUB_REF_NAME" == "v$version" ]]
+            git merge-base --is-ancestor HEAD refs/remotes/origin/main
+          fi
+          umask 077
+          sign=$(mktemp -d)
+          trap 'rm -f -- "$sign/private.pem" "$sign/certificate.pem" "$sign/public.pem" "$sign/signature"; rmdir -- "$sign"' EXIT
+          suffix=-debug
+          if [[ "$SIGNED_BUILD" == true ]]; then
+            : "${HFP_SIGNING_KEY:?Configure HFP_SIGNING_KEY_PEM}"
+            : "${HFP_SIGNING_CERT:?Configure HFP_SIGNING_CERT_PEM}"
+            printf '%s\n' "$HFP_SIGNING_KEY" > "$sign/private.pem"
+            printf '%s\n' "$HFP_SIGNING_CERT" > "$sign/certificate.pem"
+            fingerprint=$(openssl x509 -in "$sign/certificate.pem" -outform DER | sha256sum)
+            [[ "${fingerprint%% *}" == '0358705ab19083603cce2aff2b519512a3e623b5e8f9d15a0edbcf6d58da135a' ]] || { echo '::error::Publisher certificate mismatch'; exit 1; }
+            suffix=
+          else
+            openssl req -x509 -newkey rsa:2048 -nodes -days 2 -subj '/CN=HFUT Plugin CI' \
+              -keyout "$sign/private.pem" -out "$sign/certificate.pem" 2>/dev/null
+          fi
+          unset HFP_SIGNING_KEY HFP_SIGNING_CERT
+          package="HFUT-Campus-Rear-Plugin-$version$suffix.hfp"
+          HFP_SIGN_DIR="$sign" node scripts/pack.mjs --source hfp --output "dist/$package"
+          (
+            cd dist
+            unzip -p "$package" signer.der | openssl x509 -inform DER -pubkey -noout > "$sign/public.pem"
+            unzip -p "$package" signature.bin > "$sign/signature"
+            unzip -p "$package" manifest.json | openssl dgst -sha256 -verify "$sign/public.pem" -signature "$sign/signature"
+            expected=$(unzip -p "$package" manifest.json | jq -er .scriptSha256)
+            actual=$(unzip -p "$package" main.js | sha256sum)
+            [[ "${actual%% *}" == "$expected" ]]
+            sha256sum -- "$package" HFUT-Campus-Rear-OLED.zip > SHA256SUMS.txt
+          )
+      - uses: actions/upload-artifact@v4
+        with:
+          name: plugin-files
+          path: dist/
+          if-no-files-found: error
+
+  publish:
+    if: github.event_name == 'push' && github.ref_type == 'tag' && !github.event.repository.private
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: plugin-files
+          path: release
+      - name: Publish verified plugin
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cd release
+          sha256sum -c SHA256SUMS.txt
+          package="HFUT-Campus-Rear-Plugin-${GITHUB_REF_NAME#v}.hfp"
+          args=(--verify-tag --generate-notes --title "背屏付款码 $GITHUB_REF_NAME")
+          if [[ "$GITHUB_REF_NAME" == *-* ]]; then args+=(--prerelease); fi
+          gh release create "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" "${args[@]}" "$package" HFUT-Campus-Rear-OLED.zip SHA256SUMS.txt
