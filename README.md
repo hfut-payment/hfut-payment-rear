@@ -52,3 +52,14 @@ adb push ./original-rearscreen "$target"
 ## 构建
 
 需要 Node.js 22.2 或更新版本。`npm run build` 在 `dist/` 生成主题 ZIP。构建 HFP 时，把 `HFP_SIGN_DIR` 指向发布者的 RSA 签名目录，再运行 `npm run build:hfp`。
+
+## 发布新版本
+
+更新 `hfp/manifest.json` 的 `version` 和 `revision`，提交改动。在 [Actions](../../actions/workflows/build-plugin.yml) 手动运行 `signed_candidate`，用生成的 HFP 和主题 ZIP 验证安装。审核通过后，在本地 `main` 分支给对应提交打标签，例如：
+
+~~~sh
+git tag -a v2.0.4 -m "Release v2.0.4"
+git push --atomic origin main refs/tags/v2.0.4
+~~~
+
+公开仓库的标签构建会在验签后把 HFP、主题 ZIP 和校验文件发布到 [Releases](../../releases)。
