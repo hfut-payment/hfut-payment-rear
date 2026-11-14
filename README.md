@@ -1,65 +1,79 @@
-# payfor工大 · 背屏付款码
+# payfor工大 · 小米背屏付款码
 
-翻过手机，就能在小米背屏上出示校园付款码。你可以选择在亮屏时显示余额，进入息屏显示后余额会隐藏。付款码过期或手机端停止共享时，背屏会清空。
+通过宿主插件与自定义背屏主题，在受支持的小米手机背屏上出示校园付款码。支持配置亮屏时是否显示余额；进入息屏显示（AOD）后余额会自动隐藏；当付款码过期或手机端停止共享时，背屏数据会自动清空。
 
-<p align="center"><img src="docs/images/rear-device.png" width="310" alt="小米 17 Pro 背屏实机，展示演示二维码、条形码和 ¥66.66"></p>
+<p align="center"><img src="docs/images/rear-device.png" width="440" alt="小米 17 Pro 背屏特写，展示演示二维码、条形码和 ¥66.66"></p>
 
-*小米 17 Pro 实机效果。图中的码和金额均为演示内容。*
+*小米 17 Pro 背屏实机效果。条形码、二维码和金额均为演示内容。*
+
+## 机型兼容性
+
+| 目标机型 | 当前状态 |
+| --- | --- |
+| 小米 17 Pro | 已实测，使用自定义背屏壁纸。 |
+| 小米 17 Pro Max | 待实测，壁纸导入方式可能随固件而异。 |
+| 小米 18 Pro / 18 Pro Max | 待实测。两款机型都提供背屏应用卡，后续可尝试用应用卡显示付款码，省去替换壁纸。应用卡版还未实现，动态付款码同步也有待验证。 |
+
+小米 18 Pro 系列的功能介绍见[小米背屏应用卡页面](https://m.mi.com/appcard)。
 
 ## 安装前
 
-- 手机要支持可执行的背屏主题。下面的步骤在小米 17 Pro 上验证过，其他机型或固件的导入方式可能不同。
-- 手机上的宿主应用需要支持导入 HFP，并能向背屏主题提供动态付款码。
+当前版本使用自定义背屏壁纸。手机端需有能导入 HFP、并向背屏主题提供动态付款码的宿主。正式发布后可从 [Releases](../../releases) 获取两份文件。
 
-## 安装
+- **HFP 插件**导入手机宿主，用于同步数据和管理权限。
+- **`HFUT-Campus-Rear-OLED.zip`** 用于应用背屏主题，保留 ZIP 原样。
 
-1. 从 [Releases](../../releases) 下载 HFP 和 `HFUT-Campus-Rear-OLED.zip`。HFP 装在手机应用里，ZIP 用于系统背屏主题，保持压缩包原样。
-2. 在手机应用的「设置 → 插件管理 → 从文件导入」选中 HFP，核对权限后确认。
-3. 按下一节应用 ZIP。已经装过自定义背屏主题的用户，可以直接参考 [唯梦倾城的社区教程「方式 A（AI 壁纸）」](https://github.com/wmqc97/mi-backscreen-themes?tab=readme-ov-file#-安装方法)。
-4. 回到背屏插件页，打开「读取权限」并按页面指引授权，然后开启背屏显示。如果需要余额，在「显示选项」打开。
-5. 翻到背屏，检查付款码是否刷新。如果开启了余额，再确认它在亮屏时出现、息屏显示时隐藏。
+## 安装与启用流程
 
-恢复默认背屏时，在系统主题设置重新选用原壁纸，并在宿主关闭「背屏显示」。
+1. **导入 HFP 插件**：在手机宿主应用的「设置 → 插件管理 → 从文件导入」中选择下载的 HFP 文件，核对所需权限后确认导入。
+2. **应用背屏主题 ZIP**：若已有自定义背屏主题的导入经验，可直接参考 [唯梦倾城的社区教程「方式 A（AI 壁纸）」](https://github.com/wmqc97/mi-backscreen-themes?tab=readme-ov-file#-安装方法) 应用 `HFUT-Campus-Rear-OLED.zip`；首次操作请参照下一节的小米 17 Pro 实测步骤。
+3. **授权与开启显示**：返回宿主应用的背屏插件设置页，开启「读取权限」并按页面指引完成授权，随后打开「背屏显示」开关。如需在亮屏时查看余额，可在「显示选项」中开启。
+4. **效果验证**：翻转手机查看背屏付款码是否正常刷新。若开启了余额显示，可锁屏观察其在亮屏时显示、进入息屏显示后隐藏的切换效果。
 
-### 小米 17 Pro：用 AI 壁纸预览应用主题
+**恢复默认设置**：如需停用背屏付款码，可在系统「主题」设置中重新应用原壁纸，并在宿主应用中关闭「背屏显示」。
 
-以下是小米 17 Pro 实测过的路径。准备一台装有 [Android Platform Tools](https://developer.android.com/tools/releases/platform-tools) 的电脑和一根数据线，开启 USB 调试，连接手机并在手机上确认授权。在 ZIP 所在目录打开 Bash（Windows 可用 Git Bash）。
+### 小米 17 Pro 实测流程：通过 AI 壁纸预览导入主题
 
-1. 在手机「主题」生成一条新的 3D 卡通 AI 壁纸。到 AI 壁纸历史里打开这一条预览，先不要点「应用」。
-2. 在电脑执行下面的命令，按修改时间找刚生成的目录。若无法确认是哪一条，先停下来，不要替换其他壁纸的文件。
+请在电脑端配置好 [Android Platform Tools](https://developer.android.com/tools/releases/platform-tools)，使用数据线连接手机，开启手机「USB 调试」并确认电脑的调试授权。在存放 `HFUT-Campus-Rear-OLED.zip` 的目录下打开 Bash 终端（Windows 可使用 Git Bash）：
 
-~~~sh
+1. **生成壁纸并停留预览页**：在手机「主题」应用中生成一条新的「3D 卡通 AI 壁纸」，进入 AI 壁纸历史记录并打开该壁纸的预览页面（**此时请勿点击「应用」**）。
+2. **定位目标目录**：在电脑终端执行以下命令，按修改时间查找刚刚生成的壁纸目录名。若无法准确判断目标目录，请停止操作，切勿随意替换其他目录文件：
+
+```sh
 adb shell ls -lt /sdcard/Android/data/com.android.thememanager/files/MIUI/.ai_wallpaper/maml/
-~~~
+```
 
-3. 把下面的 `CARRIER` 改为刚确认的目录名。先备份原文件，命令成功且备份非空后才会替换。ZIP 不解压，手机上的文件仍叫 `rearscreen`。
+3. **备份原件并替换**：将下方命令中的 `CARRIER` 替换为上一步确认的目录名。该命令会先将手机上的 `rearscreen` 原文件拉取至本地备份，**确认备份成功且文件非空后**，再将未解压的 ZIP 包推送至原路径完成替换：
 
-~~~sh
+```sh
 target=/sdcard/Android/data/com.android.thememanager/files/MIUI/.ai_wallpaper/maml/CARRIER/rearscreen
 adb pull "$target" ./original-rearscreen &&
   test -s ./original-rearscreen &&
   adb push ./HFUT-Campus-Rear-OLED.zip "$target"
-~~~
+```
 
-4. 上传成功后，在原来的手机预览页点「应用」。等待应用完成，然后用下面的命令还原历史记录里的原文件。若应用失败，也还原同一份备份。
+4. **应用主题并还原记录**：推送成功后，在手机预览页点击「应用」。待系统应用完成后，执行以下命令将备份的原文件还原至历史记录目录（若应用失败，同样需执行此命令恢复原件）：
 
-~~~sh
+```sh
 adb push ./original-rearscreen "$target"
-~~~
+```
 
-已应用的背屏主题会保留。确认背屏仍显示新主题后即可关闭 USB 调试。如果系统没有相同入口、目录无法访问，或备份失败，请保留现有主题，参考社区教程核对适用于该固件的导入方式。
+还原操作不会影响已生效的背屏主题。确认背屏正常显示付款码主题后，即可关闭 USB 调试。若当前固件无对应入口、目录无法访问或备份失败，请保留现有主题，并参考上述社区教程确认适配当前固件的导入方案。
 
-## 构建
+## 源码构建与发版
 
-需要 Node.js 22.2 或更新版本。`npm run build` 在 `dist/` 生成主题 ZIP。构建 HFP 时，把 `HFP_SIGN_DIR` 指向发布者的 RSA 签名目录，再运行 `npm run build:hfp`。
+本地构建需安装 Node.js 22.2 或更高版本：
 
-## 发布新版本
+* **构建背屏主题 ZIP**：执行 `npm run build`，产物生成于 `dist/` 目录。
+* **构建 HFP 插件**：将环境变量 `HFP_SIGN_DIR` 指向发布者的 RSA 签名证书目录，随后执行 `npm run build:hfp`。
 
-更新 `hfp/manifest.json` 的 `version` 和 `revision`，提交改动。在 [Actions](../../actions/workflows/build-plugin.yml) 手动运行 `signed_candidate`，用生成的 HFP 和主题 ZIP 验证安装。审核通过后，在本地 `main` 分支给对应提交打标签，例如：
+1. 更新 `hfp/manifest.json` 中的 `version` 与 `revision`，提交代码改动。
+2. 在 [Actions](../../actions/workflows/build-plugin.yml) 中手动运行 `signed_candidate`，下载生成的候选 HFP 与主题 ZIP 进行实机安装验证。
+3. 审核与测试通过后，在本地 `main` 分支对目标提交打标签并推送（以 `v2.0.4` 为例）：
 
-~~~sh
+```sh
 git tag -a v2.0.4 -m "Release v2.0.4"
 git push --atomic origin main refs/tags/v2.0.4
-~~~
+```
 
-公开仓库的标签构建会在验签后把 HFP、主题 ZIP 和校验文件发布到 [Releases](../../releases)。
+仓库公开后，标签构建工作流将在验签通过后，把 HFP、主题 ZIP 及校验文件自动发布至 [Releases](../../releases)。
